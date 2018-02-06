@@ -22,7 +22,6 @@ CREATE TABLE CARS(
     MODEL VARCHAR(30) NOT NULL,
     BRAND VARCHAR(30) NOT NULL,
     PRICE DECIMAL NOT NULL,
-    INVOICE INT NOT NULL,
     MOTOR_NUM INT NOT NULL,
     SERIES_NUM INT NOT NULL,
     PRIMARY KEY (PLATE)
@@ -32,8 +31,8 @@ CREATE TABLE CARS(
 CREATE TABLE INSURANCE (
   USER_ID INT NOT NULL,
   CAR_PLATE VARCHAR(10) NOT NULL,
-  PRICE DECIMAL(6,2) NOT NULL,
-  COVERAGE VARCHAR(50) NOT NULL,
+  PRICE DECIMAL(10,2) NOT NULL,
+  COVERAGE INT NOT NULL,
   cstart DATE NOT NULL,
   cend DATE NOT NULL,
   period business_time(cstart, cend),
@@ -58,20 +57,26 @@ ALTER TABLE INSURANCE ADD VERSIONING USE HISTORY TABLE INSURANCE_HYSTORY;
 
 --Triggers
 --En cancelación, disminuir precio
-create trigger INSURANCE_CANCELATION
-  after update on INSURANCE referencing
-  old as old_values
-  new as new_values
-  for each row mode db2sql
-  begin atomic
-    update estadisticas
-      set empDespedidos = empDespedidos +1; end
+DROP TRIGGER PRICE_ADJUST;
+CREATE TRIGGER PRICE_ADJUST
+  AFTER UPDATE ON INSURANCE REFERENCING
+  NEW AS new_val
+  OLD AS old_val
+  FOR EACH ROW MODE DB2SQL
+  WHEN (new_val.CSTART != old_val.CSTART OR new_val.CEND != old_val.CEND)
+  BEGIN ATOMIC
+    DECLARE new_price DECIMAL(10,2);
+    SET new_price = CAST(old_val.PRICE * (DAYS(new_val.CEND) - DAYS(new_val.CSTART))/(DAYS(old_val.CEND) - DAYS(old_val.CSTART)) AS DECIMAL(10,2));
+    UPDATE INSURANCE SET PRICE = new_price WHERE USER_ID=new_val.USER_ID AND CAR_PLATE=new_val.CAR_PLATE;
+  END;
 
 --En update no se puede disminuir las coverturas de poliza
-CREATE TRIGGER INSURANCErestriction
-  BEFORE UPDATE OF  ON INSURANCE
-  REFERENCING OLD AS old_values NEW AS new_values
-  FOR EACH ROW mode DB2SQL
-  WHEN ( BETWEEN )
-  BEGIN atomic
-    SIGNAL SQLSTATE '56001' ('No se puede incrementar mas del 30%'); END
+CREATE TRIGGER INSURANCE_UPGRADE
+  BEFORE UPDATE ON INSURANCE REFERENCING
+  NEW AS new_val
+  OLD AS old_val
+  FOR EACH ROW MODE DB2SQL
+  WHEN (old_val.COVERAGE > new_val.COVERAGE)
+  BEGIN ATOMIC
+      SIGNAL SQLSTATE '75001' ('Invalid update: only coverage upgrades are allowed!');
+  END;

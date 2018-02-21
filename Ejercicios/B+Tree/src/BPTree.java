@@ -1,28 +1,16 @@
 
 public class BPTree {
-    Node tree = null;
+    private Node tree = null;
 
-    private boolean DEBUG = false;
-
-    public BPTree(){
-
-    }
-
-    public BPTree(Boolean debug){
-        DEBUG = debug;
-    }
-
-    private void log(String s){
-        if (DEBUG)
-            System.out.println(s);
-    }
+    public BPTree(){}
 
     public void insert(Integer val){
-        log("INSERTING: " + val);
         if(tree == null) {
+            // No root exists
             tree = new Node(val);
         }
         else{
+            // Sink the value into the tree
             sink(null, tree, val);
         }
     }
@@ -31,75 +19,54 @@ public class BPTree {
         if(current.leaf){
             // CURRENT IS LEAF NODE
             if(current.insert(val)){
-                log("Overfill");
+                // Node had an overflow after the insert
                 if(parent == null){
                     // Node is the root, so create children
-                    log("Split Down");
                     current.splitDown();
+                    // Nothing to return
                     return null;
                 }
                 else{
                     // Current has a parent, move the problem up
-                    log(" SPLIT UP!!! ");
-                    /*
-                    Integer mid_data = current.getDataMiddle();
-                    Integer left_data = current.getDataFirst();
-                    Integer right_data = current.getDataLast();
-                    current.data.clear();
-                    current.data.add(left_data);
-                    Node right = new Node(mid_data, right_data, current.nx);
-                    log("New Node:");
-                    if (DEBUG)
-                        right.print();
-                    current.nx = right;
-
-                    return right;
-                    */
-                    return current.splitUp();
+                    return current.splitRight();
                 }
             }
         }else {
             // CURRENT IS ROUTING NODE
-            log("Sinking one more level to {" + current.route(val).id + "}");
+            // Do a recursion to go lower until a leaf is found
             Node res = sink(current, current.route(val), val);
+
+            // If recursion returns a node it must be added to this node's routing table
             if (res != null){
+                // A new node was created by a child
                 boolean overflow;
                 if(res.leaf) {
+                    // The new node is a leaf, add it's first value to this node's data
                     overflow = current.insert(res.getDataFirst());
                 }
                 else{
+                    // The new node is a routing node, add it's routing data to this node's data
                     overflow = current.insert(res.routingData);
                 }
+                // Insert the route to the new node
                 current.insertRoute(res);
+
+                // If the current node was overflowed after inserting
                 if(overflow){
                     if(parent == null){
+                        // If node has no parent split node down
                         current.splitDown();
+                        // Nothing to return
+                        return null;
                     }
                     else{
-                        return current.splitUp();
                         // Split and carry up
-                        /*
-                        Integer mid_data = current.getDataMiddle();
-                        Integer left_data = current.getDataFirst();
-                        Integer right_data = current.getDataLast();
-                        current.data.clear();
-                        current.data.add(left_data);
-
-                        Node right = new Node(right_data, current.nx);
-                        right.leaf = false;
-                        right.routingData = mid_data;
-
-                        // Current should have 4 pointers, remove the last 2 in order and insert them
-                        // into right in the correct order.
-                        right.pointer.add(current.pointer.remove(2));
-                        right.pointer.add(current.pointer.remove(2));
-                        return right;
-                        */
-
+                        return current.splitRight();
                     }
                 }
             }
         }
+        // Nothing to return: no new node was created
         return null;
     }
 

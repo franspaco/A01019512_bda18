@@ -15,17 +15,29 @@ public class Node {
     Vector<Node> pointer;
     Node nx = null; // Routing for linked list
 
+    Integer routingData;
+
+    private String spacer(int lvl){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < lvl; i++) {
+            sb.append("|   ");
+        }
+        return sb.toString();
+    }
+
     public void print(int lvl){
-        System.out.print("\nNode:("+lvl+") {"+id+"} " + ((leaf)? "L":"NL") + "\n");
+        String spaces = spacer(lvl);
+        System.out.print("\n" + spaces + "Node:("+lvl+") {"+id+"} " + ((leaf)? "L":"NL") + "\n");
+        System.out.print(spaces + " ");
         for( Object val: data){
             System.out.print(val + ",");
         }
         System.out.println();
         for (Node n: pointer) {
-            System.out.println("PT->{" + n.id + "}");
+            System.out.println(spaces + " PT->{" + n.id + "}");
         }
         if(nx != null){
-            System.out.println("LL->{" + nx.id + "}");
+            System.out.println(spaces + " LL->{" + nx.id + "}");
         }
     }
 
@@ -89,8 +101,8 @@ public class Node {
             if(!inserted){
                 data.add(val);
             }
-            System.out.println("After insert:");
-            print();
+            //System.out.println("After insert:");
+            //print();
             return (data.size() >= MAX_DEGREE);
         }
         else {
@@ -99,9 +111,37 @@ public class Node {
         return false;
     }
 
+    public Node splitUp(){
+        Integer mid_data = getDataMiddle();
+        Integer left_data = getDataFirst();
+        Integer right_data = getDataLast();
+
+        if(leaf){
+            data.clear();
+            data.add(left_data);
+            Node right = new Node(mid_data, right_data, nx);
+            nx = right;
+            return right;
+        }
+        else{
+            data.clear();
+            data.add(left_data);
+
+            Node right = new Node(right_data, nx);
+            right.leaf = false;
+            right.routingData = mid_data;
+
+            // Current should have 4 pointers, remove the last 2 in order and insert them
+            // into right in the correct order.
+            right.pointer.add(pointer.remove(2));
+            right.pointer.add(pointer.remove(2));
+            return right;
+        }
+    }
+
     public void splitDown(){
-        System.out.println("PRE: ");
-        print();
+        //System.out.println("PRE: ");
+        //print();
         Integer base_data = getDataMiddle();
         Integer left_data = getDataFirst();
         Integer right_data = getDataLast();
@@ -116,8 +156,8 @@ public class Node {
             pointer.clear();
             pointer.add(left);
             pointer.add(right);
-            System.out.print("Current is: ");
-            print();
+            //System.out.print("Current is: ");
+            //print();
         }
         else{
             Node left = new Node(left_data);
@@ -138,8 +178,8 @@ public class Node {
             pointer.add(left);
             pointer.add(right);
         }
-        System.out.println("POS:");
-        print();
+        //System.out.println("POS:");
+        //print();
     }
 
     public void insertRoute(Node node){
@@ -147,10 +187,10 @@ public class Node {
             boolean inserted = false;
             int i = 0;
             while(!inserted && i < data.size()){
-                System.out.println("Comparing " + node.getDataFirst() + " vs. " + data.elementAt(i));
+                //System.out.println("Comparing " + node.getDataFirst() + " vs. " + data.elementAt(i));
                 if(lt(node.getDataFirst(), data.elementAt(i))){
-                    System.out.println("LT!");
-                    System.out.println("Adding route to {"+node.id+"} in place " + i);
+                    //System.out.println("LT!");
+                    //System.out.println("Adding route to {"+node.id+"} in place " + i);
                     pointer.add(i, node);
                     inserted = true;
                     break;

@@ -2,8 +2,23 @@
 public class BPTree {
     Node tree = null;
 
+    private boolean DEBUG = false;
+
+    public BPTree(){
+
+    }
+
+    public BPTree(Boolean debug){
+        DEBUG = debug;
+    }
+
+    private void log(String s){
+        if (DEBUG)
+            System.out.println(s);
+    }
+
     public void insert(Integer val){
-        System.out.println("INSERTING: " + val);
+        log("INSERTING: " + val);
         if(tree == null) {
             tree = new Node(val);
         }
@@ -14,53 +29,73 @@ public class BPTree {
 
     private Node sink(Node parent, Node current, Integer val){
         if(current.leaf){
+            // CURRENT IS LEAF NODE
             if(current.insert(val)){
-                System.out.println("Overfill");
+                log("Overfill");
                 if(parent == null){
                     // Node is the root, so create children
-                    System.out.println("Split Down");
+                    log("Split Down");
                     current.splitDown();
                     return null;
                 }
                 else{
                     // Current has a parent, move the problem up
-                    System.out.println(" SPLIT UP!!! ");
+                    log(" SPLIT UP!!! ");
+                    /*
                     Integer mid_data = current.getDataMiddle();
                     Integer left_data = current.getDataFirst();
                     Integer right_data = current.getDataLast();
                     current.data.clear();
                     current.data.add(left_data);
                     Node right = new Node(mid_data, right_data, current.nx);
-                    System.out.println("New Node:");
-                    right.print();
+                    log("New Node:");
+                    if (DEBUG)
+                        right.print();
                     current.nx = right;
 
                     return right;
-
-                    /*
-                    boolean overflow = parent.insert(mid_data);
-                    parent.insertRoute(right);
-                    System.out.println("Parent:");
-                    parent.print();
-
-                    if(overflow) {
-                        parent.splitDown();
-                    }
                     */
+                    return current.splitUp();
                 }
             }
         }else {
-            System.out.println("Sinking one more level to {" + current.route(val).id + "}");
+            // CURRENT IS ROUTING NODE
+            log("Sinking one more level to {" + current.route(val).id + "}");
             Node res = sink(current, current.route(val), val);
             if (res != null){
-                boolean overflow = current.insert(res.getDataFirst());
+                boolean overflow;
+                if(res.leaf) {
+                    overflow = current.insert(res.getDataFirst());
+                }
+                else{
+                    overflow = current.insert(res.routingData);
+                }
                 current.insertRoute(res);
                 if(overflow){
                     if(parent == null){
                         current.splitDown();
                     }
                     else{
-                        // Split up?
+                        return current.splitUp();
+                        // Split and carry up
+                        /*
+                        Integer mid_data = current.getDataMiddle();
+                        Integer left_data = current.getDataFirst();
+                        Integer right_data = current.getDataLast();
+                        current.data.clear();
+                        current.data.add(left_data);
+
+                        Node right = new Node(right_data, current.nx);
+                        right.leaf = false;
+                        right.routingData = mid_data;
+
+                        // Current should have 4 pointers, remove the last 2 in order and insert them
+                        // into right in the correct order.
+                        right.pointer.add(current.pointer.remove(2));
+                        right.pointer.add(current.pointer.remove(2));
+                        return right;
+                        */
+
                     }
                 }
             }

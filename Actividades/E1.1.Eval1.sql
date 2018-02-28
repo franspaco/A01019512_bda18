@@ -84,3 +84,61 @@ DELIMITER ;
 
 CALL update_original_languages();
 
+
+
+## DB2
+
+DROP TABLE gomitas;
+CREATE TABLE gomitas(
+  ID INT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+  NAME VARCHAR(150) NOT NULL,
+  PRICE DECIMAL(10,6) NOT NULL,
+  cstart DATE NOT NULL,
+  cend DATE NOT NULL,
+  period business_time(cstart, cend),
+  PRIMARY KEY(ID, business_time WITHOUT overlaps)
+);
+
+INSERT INTO gomitas (NAME, PRICE, cstart, cend) VALUES
+  ('gom1', 5, '2018-1-1', '2019-1-1'),
+  ('gom2', 6, '2018-1-1', '2019-1-1'),
+  ('gom3', 7, '2018-1-1', '2019-1-1'),
+  ('gom4', 8, '2018-1-1', '2019-1-1'),
+  ('gom5', 9, '2018-1-1', '2019-1-1'),
+  ('gom6', 10, '2018-1-1', '2019-1-1'),
+  ('gom7', 11, '2018-1-1', '2019-1-1'),
+  ('gom8', 12, '2018-1-1', '2019-1-1'),
+  ('gom9', 13, '2018-1-1', '2019-1-1'),
+  ('gom10', 14, '2018-1-1', '2019-1-1'),
+  ('gom11', 15, '2018-1-1', '2019-1-1'),
+  ('gom12', 16, '2018-1-1', '2019-1-1');
+
+UPDATE gomitas
+FOR PORTION OF BUSINESS_TIME FROM '2018-2-1' to '2019-1-1'
+  SET PRICE = PRICE*1.45;
+
+UPDATE gomitas
+FOR PORTION OF BUSINESS_TIME FROM '2018-2-15' to '2019-1-1'
+  SET PRICE = (PRICE/1.45)*1.1;
+
+UPDATE gomitas
+FOR PORTION OF BUSINESS_TIME FROM '2018-4-25' to '2019-1-1'
+  SET PRICE = PRICE*1.45;
+
+UPDATE gomitas
+FOR PORTION OF BUSINESS_TIME FROM '2018-5-5' to '2019-1-1'
+  SET PRICE = (PRICE/1.45)*1.1;
+
+UPDATE gomitas
+FOR PORTION OF BUSINESS_TIME FROM '2018-10-25' to '2019-1-1'
+  SET PRICE = PRICE*1.45;
+
+UPDATE gomitas
+FOR PORTION OF BUSINESS_TIME FROM '2018-11-5' to '2019-1-1'
+  SET PRICE = (PRICE/1.45)*1.1;
+
+SELECT * from gomitas WHERE NAME='gom1';
+
+SELECT SUM(PRICE)/COUNT(*) as AVG from gomitas WHERE NAME='gom1';
+
+SELECT MAX(PRICE) as MAX from gomitas WHERE NAME='gom1';

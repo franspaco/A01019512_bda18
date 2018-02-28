@@ -142,3 +142,5 @@ SELECT * from gomitas WHERE NAME='gom1';
 SELECT SUM(PRICE)/COUNT(*) as AVG from gomitas WHERE NAME='gom1';
 
 SELECT MAX(PRICE) as MAX from gomitas WHERE NAME='gom1';
+
+SELECT MIN(PRICE) as MAX from gomitas WHERE NAME='gom1';

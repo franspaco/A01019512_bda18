@@ -1,0 +1,86 @@
+
+use universidad
+db.createCollection("cursos")
+
+db.cursos.insert({titulo:"Bases de Datos"})
+
+db.cursos.update(
+    {titulo:"Bases de Datos"},
+    {
+        $set:{
+            profesor:""
+        }
+    }
+)
+
+db.cursos.update(
+    {titulo:"Bases de Datos"},
+    {
+        $set: 
+        {
+            profesor: {
+                nombre: "Ariel",
+                nomina:"L???",
+                direccion:"Algun lado",
+                genero:"hombre"
+            }
+        }
+    }
+)
+
+db.cursos.update(
+    {titulo:"Bases de Datos"},
+    {
+        $set:{
+            año:2018
+        }
+    }
+)
+
+
+db.cursos.update(
+    {titulo:"Bases de Datos"},
+    {
+        $set:{
+            evaluaciones:{
+                teoricas:100,
+                practicas:150
+            }
+        }
+    }
+)
+
+db.cursos.update(
+    {titulo:"Bases de Datos"},
+    {
+        $set:{
+            alumnos:[]
+        }
+    }
+)
+
+db.cursos.update(
+    {titulo:"Bases de Datos"},
+    {
+        $push:{
+            alumnos:{
+                nombre:"Paco",
+                matricula:"A01019512",
+                direccion: "Algun lado",
+                genero: "hombre",
+                eval_curso: 100,
+                eval_prof: 100,
+                comentarios: "ola k ase",
+                calificaciones:[
+                    95,
+                    100,
+                    98,
+                    92
+                ],
+                final: 98
+            }
+        }
+    }
+)
+
+
